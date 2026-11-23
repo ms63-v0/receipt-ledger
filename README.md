@@ -1,5 +1,8 @@
 # 영수증 가계부
 
+**배포 주소:** https://ms63-v0.github.io/receipt-ledger/  
+`main` 브랜치에 push하면 GitHub Actions가 자동으로 다시 배포합니다.
+
 영수증 사진을 올리면 Gemini가 가게명, 날짜, 품목, 금액을 읽어 가계부에 채워 주는 웹앱입니다.
 
 - **프론트**: Vite + React + TypeScript (디자인: 프로젝트 `DESIGN.md` 토큰 적용)
