@@ -1,0 +1,5 @@
+# 로컬 개발용 최소 설정 (supabase init 으로 생성되는 파일의 일부)
+project_id = "receipt-ledger"
+
+[functions.parse-receipt]
+verify_jwt = true
