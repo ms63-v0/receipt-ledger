@@ -1,4 +1,4 @@
-import { monthGrid, parseYmd, signed, todayYmd, WEEKDAYS } from "../lib/format";
+import { compact, monthGrid, num, parseYmd, todayYmd, WEEKDAYS } from "../lib/format";
 
 export interface DayTotal {
   income: number;
@@ -20,7 +20,7 @@ export function Calendar({ year, month, totals, selected, onSelect }: Props) {
   return (
     <div className="cal" role="grid" aria-label={`${year}년 ${month}월`}>
       {WEEKDAYS.map((w, i) => (
-        <div key={w} className={`cal-weekday t-caption ${i === 0 ? "sun" : ""}`} role="columnheader">
+        <div key={w} className={`cal-weekday t-caption ${i === 0 ? "sun" : i === 6 ? "sat" : ""}`} role="columnheader">
           {w}
         </div>
       ))}
@@ -33,6 +33,8 @@ export function Calendar({ year, month, totals, selected, onSelect }: Props) {
           hasData && "has-data",
           date === today && "today",
           date === selected && "selected",
+          i % 7 === 0 && "sun",
+          i % 7 === 6 && "sat",
         ]
           .filter(Boolean)
           .join(" ");
@@ -46,14 +48,18 @@ export function Calendar({ year, month, totals, selected, onSelect }: Props) {
             onClick={() => onSelect(date)}
           >
             <span className="cal-day">{parseYmd(date).d}</span>
-            {t?.income ? <span className="cal-amt income">{signed(t.income, "income")}</span> : null}
-            {t?.expense ? <span className="cal-amt expense">{signed(t.expense, "expense")}</span> : null}
-            {hasData && (
-              <span className="cal-dot" aria-hidden>
-                {t!.income > 0 && <span className="income" />}
-                {t!.expense > 0 && <span />}
+            {t?.income ? (
+              <span className="cal-amt income">
+                <span className="full">+{num(t.income)}</span>
+                <span className="short">+{compact(t.income)}</span>
               </span>
-            )}
+            ) : null}
+            {t?.expense ? (
+              <span className="cal-amt expense">
+                <span className="full">−{num(t.expense)}</span>
+                <span className="short">−{compact(t.expense)}</span>
+              </span>
+            ) : null}
           </button>
         );
       })}

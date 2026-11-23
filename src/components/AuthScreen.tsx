@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { backend } from "../lib/api";
+import { ReceiptIcon } from "./Icons";
 
 export function AuthScreen() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
@@ -31,7 +32,7 @@ export function AuthScreen() {
 
   return (
     <div className="auth">
-      <nav className="global-nav"><div className="global-nav__inner"><span className="global-nav__brand">영수증 가계부</span></div></nav>
+      <nav className="global-nav"><div className="global-nav__inner"><span className="global-nav__brand"><span className="logo-mark"><ReceiptIcon size={15} /></span> 영수증 가계부</span></div></nav>
       <header className="auth__hero">
         <h1 className="t-hero" style={{ margin: 0 }}>찍으면, 기록된다.</h1>
         <p className="t-body muted">영수증 사진 한 장으로 가게, 날짜, 품목, 금액이 가계부에 들어갑니다.</p>

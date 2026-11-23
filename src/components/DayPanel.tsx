@@ -1,4 +1,4 @@
-import { dayLabel, signed, won } from "../lib/format";
+import { dayLabel, num, signed } from "../lib/format";
 import type { Transaction } from "../lib/types";
 import { ReceiptIcon } from "./Icons";
 import { money } from "../lib/fx";
@@ -28,8 +28,8 @@ export function DayPanel({ date, items, onOpen, onAdd }: Props) {
       ) : (
         <>
           <div className="day-totals t-caption">
-            {expense > 0 && <span><span className="muted">지출</span> {won(expense)}</span>}
-            {income > 0 && <span><span className="muted">수입</span> {won(income)}</span>}
+            {income > 0 && <span><span className="muted">수입</span> <span className="amt-income">+{num(income)}원</span></span>}
+            {expense > 0 && <span><span className="muted">지출</span> <span className="amt-expense">−{num(expense)}원</span></span>}
           </div>
           <ul className="tx-list">
             {items.map((tx) => (

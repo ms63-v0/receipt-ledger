@@ -7,7 +7,8 @@ import { DayPanel } from "./DayPanel";
 import { CategoryBreakdown } from "./CategoryBreakdown";
 import { TransactionForm, type FormSeed } from "./TransactionForm";
 import { ReceiptScanner } from "./ReceiptScanner";
-import { ChevronLeft, ChevronRight, ReceiptIcon } from "./Icons";
+import { ChevronLeft, ChevronRight, Plus, ReceiptIcon } from "./Icons";
+import { num } from "../lib/format";
 
 export function Ledger({ user }: { user: AppUser }) {
   const today = parseYmd(todayYmd());
@@ -73,7 +74,7 @@ export function Ledger({ user }: { user: AppUser }) {
     <>
       <nav className="global-nav">
         <div className="global-nav__inner">
-          <span className="global-nav__brand"><ReceiptIcon size={16} /> 영수증 가계부</span>
+          <span className="global-nav__brand"><span className="logo-mark"><ReceiptIcon size={15} /></span> 영수증 가계부</span>
           <div className="global-nav__right">
             {backend.mode === "demo" ? <span className="badge-demo">데모 모드</span> : <span className="badge-demo">{user.email}</span>}
             <button onClick={() => backend.signOut()}>{backend.mode === "demo" ? "데모 초기화" : "로그아웃"}</button>
@@ -101,7 +102,7 @@ export function Ledger({ user }: { user: AppUser }) {
         <div className="summary__row">
           <div>
             <span className="t-caption on-dark-muted">수입</span>
-            <span className="t-body-strong">{won(monthIncome)}</span>
+            <span className="t-body-strong on-dark-income">+{won(monthIncome)}</span>
           </div>
           <div>
             <span className="t-caption on-dark-muted">남은 돈</span>
@@ -116,6 +117,13 @@ export function Ledger({ user }: { user: AppUser }) {
 
       <main className="main">
         <section className="card" aria-label="달력">
+          <div className="card__head">
+            <span className="t-body-strong">{month}월 달력</span>
+            <span className="month-totals t-caption">
+              <span className="amt-income">+{num(monthIncome)}</span>
+              <span className="amt-expense">−{num(monthExpense)}</span>
+            </span>
+          </div>
           {error ? (
             <div className="empty-state">
               <p className="error-text">{error}</p>
@@ -144,6 +152,15 @@ export function Ledger({ user }: { user: AppUser }) {
           영수증 인식 결과는 틀릴 수 있어요. 저장 전에 금액과 날짜를 확인해 주세요.
         </div>
       </footer>
+
+      <div className="fab" role="toolbar" aria-label="빠른 추가">
+        <button className="btn btn-icon" aria-label="직접 입력" onClick={() => setForm({ initial: { occurred_on: selected } })}>
+          <Plus />
+        </button>
+        <button className="btn btn-primary" onClick={() => setScanning(true)}>
+          <ReceiptIcon size={18} /> 영수증 스캔
+        </button>
+      </div>
 
       {scanning && (
         <ReceiptScanner

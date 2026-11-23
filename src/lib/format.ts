@@ -6,6 +6,16 @@ export function signed(n: number, type: "income" | "expense") {
   return `${type === "income" ? "+" : "−"}${num(n)}`;
 }
 
+/** 달력 모바일용 짧은 금액: 12,300 / 12.3만 / 320만 / 1.2억 */
+export function compact(n: number) {
+  const a = Math.abs(n);
+  const trim = (x: number) => x.toFixed(1).replace(/\.0$/, "");
+  if (a >= 100_000_000) return `${trim(a / 100_000_000)}억`;
+  if (a >= 1_000_000) return `${Math.round(a / 10_000).toLocaleString("ko-KR")}만`;
+  if (a >= 100_000) return `${trim(a / 10_000)}만`;
+  return Math.round(a).toLocaleString("ko-KR");
+}
+
 const pad = (n: number) => String(n).padStart(2, "0");
 
 export const ymd = (y: number, m: number, d: number) => `${y}-${pad(m)}-${pad(d)}`;
