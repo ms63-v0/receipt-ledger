@@ -40,7 +40,7 @@ create index if not exists transaction_items_tx_idx
 
 -- updated_at 자동 갱신
 create or replace function public.touch_updated_at()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql set search_path = '' as $$
 begin
   new.updated_at = now();
   return new;
@@ -75,6 +75,12 @@ create policy "own items" on public.transaction_items
       where t.id = transaction_id and t.user_id = (select auth.uid())
     )
   );
+
+-- Data API 접근 권한 (프로젝트 기본 설정과 무관하게 명시)
+grant select, insert, update, delete on public.transactions to authenticated;
+grant select, insert, update, delete on public.transaction_items to authenticated;
+revoke all on public.transactions from anon;
+revoke all on public.transaction_items from anon;
 
 -- ---------------------------------------------------------------------
 -- Storage: 영수증 버킷 (비공개, 10MB, 이미지만)

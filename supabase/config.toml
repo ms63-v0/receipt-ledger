@@ -2,4 +2,5 @@
 project_id = "receipt-ledger"
 
 [functions.parse-receipt]
-verify_jwt = true
+# 새 JWT 서명 키와 호환되도록 게이트웨이 검증은 끄고, 함수 코드에서 auth.getUser()로 직접 검증합니다.
+verify_jwt = false
