@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { ParsedReceipt, Transaction, TxDraft, TxItem } from "./types";
+import type { ParsedReceipt, ReceiptLang, Transaction, TxDraft, TxItem } from "./types";
 import { blobToBase64, blobToDataUrl } from "./image";
 import { monthRange, todayYmd, ymd } from "./format";
 
@@ -19,7 +19,7 @@ export interface Backend {
   save(draft: TxDraft, existing?: Transaction): Promise<Transaction>;
   remove(tx: Transaction): Promise<void>;
   receiptUrl(path: string): Promise<string>;
-  parseReceipt(image: Blob): Promise<ParsedReceipt>;
+  parseReceipt(image: Blob, lang: ReceiptLang): Promise<ParsedReceipt>;
 }
 
 const sortItems = (items: (TxItem & { position?: number })[] | null | undefined) =>
@@ -104,6 +104,9 @@ function createSupabaseBackend(sb: SupabaseClient): Backend {
         memo: draft.memo,
         payment_method: draft.payment_method,
         source: draft.source,
+        currency: draft.currency,
+        original_amount: draft.original_amount,
+        exchange_rate: draft.exchange_rate,
         receipt_path,
       };
 
@@ -153,10 +156,10 @@ function createSupabaseBackend(sb: SupabaseClient): Backend {
       return data.signedUrl;
     },
 
-    async parseReceipt(image) {
+    async parseReceipt(image, lang) {
       const base64 = await blobToBase64(image);
       const { data, error } = await sb.functions.invoke("parse-receipt", {
-        body: { image: base64, mimeType: image.type || "image/jpeg" },
+        body: { image: base64, mimeType: image.type || "image/jpeg", lang },
       });
       if (error) {
         let message = "영수증 인식에 실패했습니다.";
@@ -209,6 +212,9 @@ function seedDemo(): Transaction[] {
     payment_method: null,
     receipt_path: null,
     source: "manual",
+    currency: "KRW",
+    original_amount: null,
+    exchange_rate: null,
     items: [],
     created_at: new Date().toISOString(),
     ...p,
@@ -233,6 +239,42 @@ function seedDemo(): Transaction[] {
     mk({ type: "expense", amount: 27400, occurred_on: d(14), category: "식비", merchant: "배달", payment_method: "간편결제" }),
   ];
 }
+
+const DEMO_RECEIPTS: Record<ReceiptLang, Omit<ParsedReceipt, "is_receipt" | "date">> = {
+  ko: {
+    merchant: "GS25 성수역점 (데모)", currency: "KRW", total: 9300, category: "카페·간식", payment_method: "체크카드",
+    items: [
+      { name: "삼각김밥 참치마요", quantity: 2, unit_price: null, amount: 3000 },
+      { name: "바나나우유", quantity: 1, unit_price: null, amount: 1700 },
+      { name: "컵라면 육개장", quantity: 1, unit_price: null, amount: 1300 },
+      { name: "아메리카노 RTD", quantity: 1, unit_price: null, amount: 3300 },
+    ],
+  },
+  en: {
+    merchant: "Trader Joe's (demo)", currency: "USD", total: 23.47, category: "생활·마트", payment_method: "신용카드",
+    items: [
+      { name: "Bananas", quantity: 1, unit_price: null, amount: 1.47 },
+      { name: "Mandarin Orange Chicken", quantity: 2, unit_price: null, amount: 11.98 },
+      { name: "Sparkling Water 12pk", quantity: 1, unit_price: null, amount: 10.02 },
+    ],
+  },
+  ja: {
+    merchant: "ローソン 博多駅前店 (デモ)", currency: "JPY", total: 1280, category: "식비", payment_method: "현금",
+    items: [
+      { name: "おにぎり 鮭", quantity: 2, unit_price: null, amount: 360 },
+      { name: "からあげクン", quantity: 1, unit_price: null, amount: 260 },
+      { name: "午後の紅茶", quantity: 1, unit_price: null, amount: 160 },
+      { name: "幕の内弁当", quantity: 1, unit_price: null, amount: 500 },
+    ],
+  },
+  zh: {
+    merchant: "瑞幸咖啡 (演示)", currency: "CNY", total: 38.5, category: "카페·간식", payment_method: "간편결제",
+    items: [
+      { name: "生椰拿铁", quantity: 1, unit_price: null, amount: 19.9 },
+      { name: "美式咖啡", quantity: 1, unit_price: null, amount: 18.6 },
+    ],
+  },
+};
 
 function createDemoBackend(): Backend {
   const demoUser: AppUser = { id: "demo", email: "demo@local" };
@@ -306,22 +348,9 @@ function createDemoBackend(): Backend {
       if (!url) throw new Error("사진을 찾을 수 없습니다.");
       return url;
     },
-    async parseReceipt() {
+    async parseReceipt(_image, lang) {
       await new Promise((r) => setTimeout(r, 1400));
-      return {
-        is_receipt: true,
-        merchant: "GS25 성수역점 (데모)",
-        date: todayYmd(),
-        total: 9300,
-        category: "카페·간식",
-        payment_method: "체크카드",
-        items: [
-          { name: "삼각김밥 참치마요", quantity: 2, unit_price: 1500, amount: 3000 },
-          { name: "바나나우유", quantity: 1, unit_price: 1700, amount: 1700 },
-          { name: "컵라면 육개장", quantity: 1, unit_price: 1300, amount: 1300 },
-          { name: "아메리카노 RTD", quantity: 1, unit_price: 3300, amount: 3300 },
-        ],
-      };
+      return { is_receipt: true, date: todayYmd(), ...DEMO_RECEIPTS[lang] };
     },
   };
 }

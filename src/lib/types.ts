@@ -1,5 +1,13 @@
 export type TxType = "income" | "expense";
 export type TxSource = "manual" | "receipt";
+export type ReceiptLang = "ko" | "en" | "ja" | "zh";
+
+export const RECEIPT_LANGS: { id: ReceiptLang; label: string }[] = [
+  { id: "ko", label: "한국어" },
+  { id: "en", label: "English" },
+  { id: "ja", label: "日本語" },
+  { id: "zh", label: "中文" },
+];
 
 export interface TxItem {
   id?: string;
@@ -20,6 +28,10 @@ export interface Transaction {
   payment_method: string | null;
   receipt_path: string | null;
   source: TxSource;
+  /** 원래 통화 (amount 는 항상 원화) */
+  currency: string;
+  original_amount: number | null;
+  exchange_rate: number | null;
   items: TxItem[];
   created_at: string;
 }
@@ -34,6 +46,9 @@ export interface TxDraft {
   memo: string | null;
   payment_method: string | null;
   source: TxSource;
+  currency: string;
+  original_amount: number | null;
+  exchange_rate: number | null;
   items: TxItem[];
   /** 새로 첨부한(압축된) 영수증 사진 */
   receiptFile?: Blob | null;
@@ -46,6 +61,7 @@ export interface ParsedReceipt {
   is_receipt: boolean;
   merchant: string | null;
   date: string | null;
+  currency: string;
   total: number;
   category: string;
   payment_method: string | null;

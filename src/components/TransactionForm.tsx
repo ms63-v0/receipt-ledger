@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { backend } from "../lib/api";
 import { compressImage } from "../lib/image";
 import { num, todayYmd, won } from "../lib/format";
+import { money } from "../lib/fx";
 import {
   EXPENSE_CATEGORIES,
   INCOME_CATEGORIES,
@@ -41,6 +42,13 @@ export function TransactionForm({ existing, initial, receiptBlob, notice, onClos
   const [memo, setMemo] = useState(src.memo ?? "");
   const [items, setItems] = useState<TxItem[]>(src.items ?? []);
   const [showItems, setShowItems] = useState((src.items?.length ?? 0) > 0);
+
+  // 외화 (amount 는 원화, original_amount 는 원래 통화 금액)
+  const currency = src.currency ?? "KRW";
+  const originalAmount = src.original_amount ?? null;
+  const foreign = currency !== "KRW" && originalAmount != null;
+  const [rateText, setRateText] = useState(src.exchange_rate ? String(src.exchange_rate) : "");
+  const rate = Number(rateText) || 0;
 
   const [newReceipt, setNewReceipt] = useState<Blob | null>(receiptBlob ?? null);
   const [removeReceipt, setRemoveReceipt] = useState(false);
@@ -102,6 +110,9 @@ export function TransactionForm({ existing, initial, receiptBlob, notice, onClos
         payment_method: payment || null,
         memo: memo.trim() || null,
         source: existing?.source ?? initial?.source ?? "manual",
+        currency: foreign ? currency : "KRW",
+        original_amount: foreign ? originalAmount : null,
+        exchange_rate: foreign && rate > 0 ? rate : null,
         items: type === "expense" ? items.filter((it) => it.name.trim()) : [],
         receiptFile: newReceipt,
         removeReceipt: removeReceipt && !newReceipt,
@@ -173,6 +184,31 @@ export function TransactionForm({ existing, initial, receiptBlob, notice, onClos
           />
         </div>
       </div>
+
+      {foreign && (
+        <div className="fx-box">
+          <div className="fx-row">
+            <span className="t-caption muted">원래 금액</span>
+            <span className="t-body-strong">{money(originalAmount!, currency)}</span>
+          </div>
+          <div className="fx-row">
+            <label className="t-caption muted" htmlFor="rate">환율 (1 {currency} = ? 원)</label>
+            <input
+              id="rate"
+              className="field fx-rate"
+              inputMode="decimal"
+              value={rateText}
+              placeholder="0"
+              onChange={(e) => {
+                const v = e.target.value.replace(/[^\d.]/g, "");
+                setRateText(v);
+                const r = Number(v);
+                if (r > 0) setAmountText(num(Math.round(originalAmount! * r)));
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="row-2">
         <div className="field-group">

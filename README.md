@@ -15,6 +15,8 @@
 - 월간 달력 뷰: 날짜별 수입(+)·지출(−) 합계, 모바일에서는 점으로 표시
 - 이번 달 요약: 지출, 수입, 남은 돈, 기록 건수
 - 날짜별 내역 목록, 카테고리별 지출 막대
+- 영수증 언어 선택(한국어·English·日本語·中文), 외화는 오늘 환율(Frankfurter/ECB)로 원화 환산
+- Gemini 혼잡(503/429) 시 재시도 후 상위 모델로 자동 전환, thinking low·이미지 해상도 medium으로 토큰 절약
 - 영수증 스캔: 촬영 또는 앨범 선택 → 브라우저에서 압축(긴 변 1600px JPEG) → Gemini 인식 → **확인·수정 화면** → 저장
 - 품목 편집, 품목 합계와 총액이 다르면 알림
 - 영수증 사진은 비공개 버킷에 저장, 서명 URL(10분)로만 열람
@@ -46,7 +48,7 @@ npm run dev
 ### 1. Supabase 프로젝트
 
 1. [supabase.com](https://supabase.com)에서 새 프로젝트를 만듭니다. (리전: Seoul 추천)
-2. **SQL Editor**에 `supabase/migrations/20261123000000_init.sql` 내용을 붙여 넣고 실행합니다.
+2. **SQL Editor**에 `supabase/migrations/` 의 SQL 파일들을 순서대로 붙여 넣고 실행합니다.
    (CLI를 쓴다면 `supabase link --project-ref <ref>` 후 `supabase db push`)
 3. **Authentication → Providers → Email**이 켜져 있는지 확인합니다.
    혼자 쓰는 앱이라면 *Confirm email*을 꺼 두면 가입 즉시 로그인됩니다.
@@ -62,7 +64,7 @@ supabase login
 supabase link --project-ref <프로젝트 ref>
 supabase functions deploy parse-receipt
 supabase secrets set GEMINI_API_KEY=발급받은_키
-# (선택) 모델 고정: supabase secrets set GEMINI_MODEL=gemini-flash-latest
+# (선택) 모델 변경: GEMINI_MODEL (기본 gemini-3.5-flash-lite), GEMINI_FALLBACK_MODEL (기본 gemini-3.8-flash)
 ```
 
 > ⚠️ Gemini 키는 **절대 `.env`(프론트)에 넣지 마세요.** 브라우저에 그대로 노출됩니다.

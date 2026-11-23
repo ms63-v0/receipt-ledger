@@ -286,6 +286,16 @@ img { display: block; max-width: 100%; }
 .segmented { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-xs); }
 .segmented .chip { padding: 11px 16px; font-size: 17px; letter-spacing: -0.374px; text-align: center; }
 .segmented .chip.selected { padding: 10px 15px; }
+.segmented.four { grid-template-columns: repeat(4, 1fr); }
+.segmented.four .chip { padding: 11px 4px; font-size: 14px; letter-spacing: -0.224px; }
+.segmented.four .chip.selected { padding: 10px 3px; }
+
+.fx-box {
+  display: flex; flex-direction: column; gap: var(--s-xs);
+  background: var(--canvas-parchment); border-radius: var(--r-lg); padding: var(--s-sm) var(--s-md);
+}
+.fx-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s-sm); }
+.fx-rate { width: 140px; height: 40px; text-align: right; font-size: 14px; letter-spacing: -0.224px; }
 
 .items { display: flex; flex-direction: column; gap: var(--s-xs); }
 .item-row { display: grid; grid-template-columns: minmax(0, 1fr) 64px 112px 36px; gap: 6px; align-items: center; }

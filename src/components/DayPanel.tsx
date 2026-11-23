@@ -1,6 +1,7 @@
 import { dayLabel, signed, won } from "../lib/format";
 import type { Transaction } from "../lib/types";
 import { ReceiptIcon } from "./Icons";
+import { money } from "../lib/fx";
 
 interface Props {
   date: string;
@@ -44,6 +45,7 @@ export function DayPanel({ date, items, onOpen, onAdd }: Props) {
                     </span>
                     <span className="t-caption muted">
                       {tx.category}
+                      {tx.currency !== "KRW" && tx.original_amount != null && ` · ${money(tx.original_amount, tx.currency)}`}
                       {tx.payment_method && ` · ${tx.payment_method}`}
                       {tx.items.length > 0 && ` · 품목 ${tx.items.length}개`}
                       {tx.memo && ` · ${tx.memo}`}
